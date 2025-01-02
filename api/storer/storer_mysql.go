@@ -53,3 +53,23 @@ func (ms *MySQLStorer) GetAllProducts(ctx context.Context) ([]*Product, error) {
 
 	return products, nil
 }
+
+func (ms *MySQLStorer) UpdateProduct(ctx context.Context, p *Product) (*Product, error) {
+	_, err := ms.db.ExecContext(ctx, "UPDATE products SET name=:name, image=:image, category=:category, description=:description, rating=:rating, num_reviews=:num_reviews, price=:price, count_in_stock=:count_in_stock WHERE id=:id", p)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error updating product: %w", err)
+	}
+
+	return p, nil
+}
+
+func (ms *MySQLStorer) DeleteProduct(ctx context.Context, id int64) error {
+	_, err := ms.db.ExecContext(ctx, "DELETE FROM products WHERE id=?", id)
+
+	if err != nil {
+		return fmt.Errorf("Error deleting product: %w", err)
+	}
+
+	return nil
+}
