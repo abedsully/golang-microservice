@@ -143,7 +143,7 @@ func createOrderItem(ctx context.Context, tx *sqlx.Tx, oi OrderItem) error {
 func (ms *MySQLStorer) GetOrder(ctx context.Context, id int64) (*Order, error) {
 	var o Order
 
-	err := ms.db.GetContext(ctx, &o, "SELECT FROM orders WHERE id=?", id)
+	err := ms.db.GetContext(ctx, &o, "SELECT * FROM orders WHERE id=?", id)
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting order: %w", err)
