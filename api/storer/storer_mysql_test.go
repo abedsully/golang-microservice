@@ -297,3 +297,88 @@ func TestDeleteProduct(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateOrder(t *testing.T) {
+	ois := []OrderItem {
+		{
+			Name: "Tesla Car",
+			Quantity: 1,
+			Image: "tesla.png",
+			Price: 99.99,
+			ProductID: 1,
+		},
+		{
+			Name: "IPhone 15",
+			Quantity: 1,
+			Image: "iphone15.png",
+			Price: 55.99,
+			ProductID: 1,
+		},
+	}
+
+	o := &Order{
+		PaymentMethod: "QRIS",
+		TaxPrice: 10.0,
+		ShippingPrice: 20.0,
+		TotalPrice: 200.00,
+		Items: ois,
+	}
+
+	tcs := []struct {
+		name string
+		test func(*testing.T, *MySQLStorer, sqlmock.Sqlmock)
+	} {
+		{
+			name: "success",
+			test: func(t *testing.T, st *MySQLStorer, mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				mock.ExpectExec("INSERT INTO orders (payment_method, tax_price, shipping_price, total_price) VALUES (?, ?, ?, ?)").WillReturnResult(sqlmock.NewResult(1,1))
+				mock.ExpectExec("INSERT INTO order_items (name, quantity, image, price, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)").WillReturnResult(sqlmock.NewResult(1,1))
+				mock.ExpectExec("INSERT INTO order_items (name, quantity, image, price, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)").WillReturnResult(sqlmock.NewResult(2,1))
+				mock.ExpectCommit()
+
+				co, err := st.CreateOrder(context.Background(), o)
+				require.NoError(t, err)
+				require.Equal(t, int64(1), co.ID)
+
+				err = mock.ExpectationsWereMet()
+				require.NoError(t, err)
+			},
+		},
+		{
+			name: "failed creating order",
+			test: func(t *testing.T, st *MySQLStorer, mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				mock.ExpectExec("INSERT INTO orders (payment_method, tax_price, shipping_price, total_price VALUES (?, ?, ?, ?)").WillReturnError(fmt.Errorf("error creating order"))
+				mock.ExpectRollback()
+				_, err := st.CreateOrder(context.Background(), o)
+				require.Error(t, err)
+
+				err = mock.ExpectationsWereMet()
+				require.NoError(t, err)
+			},
+		},
+		{
+			name: "failed creating order item",
+			test: func (t *testing.T, st *MySQLStorer, mock sqlmock.Sqlmock)  {
+				mock.ExpectBegin()
+				mock.ExpectExec("INSERT INTO orders (payment_method, tax_price, shipping_price, total_price VALUES (?, ?, ?, ?)").WillReturnResult(sqlmock.NewResult(1,1))
+				mock.ExpectExec("INSERT INTO order_items (name, quantity, image, price, product_id, order_id VALUES (?, ?, ?, ?, ?, ?)").WillReturnError(fmt.Errorf("error creating order item"))
+				mock.ExpectRollback()
+
+				_, err := st.CreateOrder(context.Background(), o)
+				require.Error(t, err)
+				mock.ExpectationsWereMet()
+				require.NoError(t, err)
+				
+			},
+		},
+	}
+
+	for _, tc := range tcs {
+		withTestDB(t, func(db *sqlx.DB, mock sqlmock.Sqlmock) {
+			st := NewMySqlStorer(db)
+			tc.test(t, st, mock)
+		})
+	}
+}
