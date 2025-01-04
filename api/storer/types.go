@@ -3,11 +3,11 @@ package storer
 import "time"
 
 type Product struct {
-	ID           int64      `≈db:"id"`
-	Name         string     `≈db:"name"`
-	Image        string     `≈db:"image"`
-	Category     string     `≈db:"category"`
-	Description  string     `≈db:"description"`
+	ID           int64      `db:"id"`
+	Name         string     `db:"name"`
+	Image        string     `db:"image"`
+	Category     string     `db:"category"`
+	Description  string     `db:"description"`
 	Rating       int64      `db:"rating"`
 	NumReviews   int64      `db:"num_reviews"`
 	Price        float64    `db:"price"`

@@ -59,7 +59,7 @@ func (ms *MySQLStorer) GetAllProducts(ctx context.Context) ([]*Product, error) {
 }
 
 func (ms *MySQLStorer) UpdateProduct(ctx context.Context, p *Product) (*Product, error) {
-	_, err := ms.db.NamedExecContext(ctx, "UPDATE products SET name=:name, image=:image, category=:category, description=:description, rating=:rating, num_reviews=:num_reviews, price=:price, count_in_stock=:count_in_stock, updated_at=:updated_at WHERE id=:id", p)
+	_, err := ms.db.NamedExecContext(ctx, "UPDATE products SET name=:name, image=:image, category=:category, description=:description, rating=:rating, num_reviews=:num_reviews, price=:price, count_in_stock=:count_in_stock WHERE id=:id", p)
 
 	if err != nil {
 		return nil, fmt.Errorf("error updating product: %w", err)
@@ -194,7 +194,7 @@ func (ms *MySQLStorer) DeleteOrder(ctx context.Context, id int64) error {
 			return fmt.Errorf("error deleting order items: %w", err)
 		}
 
-		_, err = tx.ExecContext(ctx, "DELETE FROM orders WHERE order_id=?", id)
+		_, err = tx.ExecContext(ctx, "DELETE FROM orders WHERE id=?", id)
 
 		if err != nil {
 			return fmt.Errorf("error deleting order: %w", err)
