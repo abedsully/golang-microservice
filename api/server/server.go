@@ -51,3 +51,23 @@ func (s *Server) GetAllOrders(ctx context.Context) ([]storer.Order, error) {
 func (s *Server) DeleteOrder(ctx context.Context, id int64) error {
 	return s.storer.DeleteOrder(ctx, id)
 }
+
+func (s *Server) CreateUser(ctx context.Context, u *storer.User) (*storer.User, error) {
+	return s.storer.CreateUser(ctx, u)
+}
+
+func (s *Server) GetUser(ctx context.Context, email string) (*storer.User, error) {
+	return s.storer.GetUser(ctx, email)
+}
+
+func (s *Server) GetAllUsers(ctx context.Context) ([]storer.User, error) {
+	return s.storer.GetAllUsers(ctx)
+}
+
+func (s *Server) UpdateUser(ctx context.Context, u *storer.User) (*storer.User, error) {
+	return s.storer.UpdateUser(ctx, u)
+}
+
+func (s *Server) DeleteUser(ctx context.Context, id int64) error {
+	return s.storer.DeleteUser(ctx, id)
+}
