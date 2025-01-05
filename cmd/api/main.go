@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/abedsully/golang-microservice/api/server"
+	"github.com/abedsully/golang-microservice/api/storer"
 	"github.com/abedsully/golang-microservice/db"
 )
 
@@ -16,4 +18,8 @@ func main() {
 	defer db.Close()
 
 	log.Println("Successfully connected to database")
+
+	st := storer.NewMySqlStorer(db.GetDB())
+
+	_ = server.NewServer(st)
 }
