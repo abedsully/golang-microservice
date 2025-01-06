@@ -475,3 +475,26 @@ func (h *handler) deleteUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *handler) loginUser(w http.ResponseWriter, r *http.Request) {
+	var u LoginUserReq
+
+	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+		http.Error(w, "error decoding json body", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.server.GetUser(h.ctx, u.Email)
+
+	if err != nil {
+		http.Error(w, "error getting user", http.StatusBadRequest)
+		return
+	}
+
+	err = util.CheckPassword(u.Password, user.Password)
+
+	if err != nil {
+		http.Error(w, "wrong password", http.StatusUnauthorized)
+		return
+	}
+}
