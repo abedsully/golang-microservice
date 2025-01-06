@@ -9,6 +9,7 @@ import (
 
 	"github.com/abedsully/golang-microservice/api/server"
 	"github.com/abedsully/golang-microservice/api/storer"
+	"github.com/abedsully/golang-microservice/util"
 	"github.com/go-chi/chi"
 )
 
@@ -333,4 +334,144 @@ func toOrderItems(items []storer.OrderItem) []OrderItem {
 		})
 	}
 	return res
+}
+
+func (h *handler) createUser(w http.ResponseWriter, r *http.Request) {
+	var u UserReq
+
+	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+		http.Error(w, "error decoding json body", http.StatusBadRequest)
+		return
+	}
+
+	hashed, err := util.HashPassword(u.Password)
+
+	if err != nil {
+		http.Error(w, "error hashing password", http.StatusInternalServerError)
+		return
+	}
+
+	u.Password = hashed
+
+	created, err := h.server.CreateUser(h.ctx, toStorerUser(&u))
+
+	if err != nil {
+		http.Error(w, "error creating user", http.StatusInternalServerError)
+		return
+	}
+
+	res := toUserRes(created)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(res)
+}
+
+func toStorerUser(u *UserReq) *storer.User {
+	return &storer.User {
+		Name: u.Name,
+		Email: u.Email,
+		Password: u.Password,
+		IsAdmin: u.IsAdmin,
+	}
+}
+
+func toUserRes(u *storer.User) UserRes {
+	return UserRes{
+		Name: u.Name,
+		Email: u.Email,
+		IsAdmin: u.IsAdmin,
+	}
+}
+
+func patchUserReq(u *storer.User, p UserReq) {
+	if p.Name != "" {
+		u.Name = p.Name
+	}
+
+	if p.Email != "" {
+		u.Email = p.Email
+	}
+
+	if p.Password != "" {
+		hashedPassword, err := util.HashPassword(p.Password)
+		if err != nil {
+			panic(err)
+		}
+
+		u.Password = hashedPassword
+	}
+
+	if p.IsAdmin {
+		u.IsAdmin = p.IsAdmin
+	}
+
+	u.UpdatedAt = toTimePtr(time.Now())
+} 
+
+func (h *handler) getAllUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := h.server.GetAllUsers(h.ctx)
+
+	if err != nil {
+		http.Error(w, "error getting all users", http.StatusInternalServerError)
+		return
+	}
+
+	var res AllUsers
+
+	for _, u := range users {
+		res.Users = append(res.Users, toUserRes(&u))
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(res)
+}
+
+func (h *handler) updateUser(w http.ResponseWriter, r *http.Request) {
+	var u UserReq
+
+	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+		http.Error(w, "error decoding json body", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.server.GetUser(h.ctx, u.Email)
+
+	if err != nil {
+		http.Error(w, "error getting user", http.StatusBadRequest)
+		return
+	}
+
+	patchUserReq(user, u)
+
+	updated, err := h.server.UpdateUser(h.ctx, user)
+
+	if err != nil {
+		http.Error(w, "error updating user", http.StatusInternalServerError)
+		return
+	}
+
+	res := toUserRes(updated)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func (h *handler) deleteUser(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	i, err := strconv.ParseInt(id, 10, 64)
+	
+	if err != nil {
+		http.Error(w, "error parsing int", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.server.DeleteUser(h.ctx, i); err != nil {
+		http.Error(w, "error deleting user", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
