@@ -9,6 +9,7 @@ import (
 
 	"github.com/abedsully/golang-microservice/api/server"
 	"github.com/abedsully/golang-microservice/api/storer"
+	"github.com/abedsully/golang-microservice/token"
 	"github.com/abedsully/golang-microservice/util"
 	"github.com/go-chi/chi"
 )
@@ -16,12 +17,14 @@ import (
 type handler struct {
 	ctx    context.Context
 	server *server.Server
+	tokenMaker *token.JWTMaker
 }
 
-func NewHandler(server *server.Server) *handler {
+func NewHandler(server *server.Server, secretKey string) *handler {
 	return &handler{
 		ctx:    context.Background(),
 		server: server,
+		tokenMaker: token.NewJWTMaker(secretKey),
 	}
 }
 
@@ -497,4 +500,24 @@ func (h *handler) loginUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "wrong password", http.StatusUnauthorized)
 		return
 	}
+
+	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, user.Email, user.IsAdmin, 15 * time.Minute)
+
+	if err != nil {
+		http.Error(w, "error creating token", http.StatusInternalServerError)
+		return
+	}
+
+	res := LoginUserRes{
+		AccessToken: accessToken,
+		User: UserRes{
+			Name: user.Name,
+			Email: user.Email,
+			IsAdmin: user.IsAdmin,
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
 }
