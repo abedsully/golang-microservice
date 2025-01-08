@@ -501,23 +501,61 @@ func (h *handler) loginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, _, err := h.tokenMaker.CreateToken(user.ID, user.Email, user.IsAdmin, 15 * time.Minute)
+	accessToken, accessClaims, err := h.tokenMaker.CreateToken(user.ID, user.Email, user.IsAdmin, 15 * time.Minute)
 
 	if err != nil {
-		http.Error(w, "error creating token", http.StatusInternalServerError)
+		http.Error(w, "error creating access token", http.StatusInternalServerError)
+		return
+	}
+
+	refreshToken, refreshClaim, err := h.tokenMaker.CreateToken(user.ID, user.Email, user.IsAdmin, 24 * time.Hour)
+
+	if err != nil {
+		http.Error(w, "error creating refresh token", http.StatusInternalServerError)
+		return
+	}
+
+	session, err := h.server.CreateSession(h.ctx, &storer.Session{
+		ID: refreshClaim.RegisteredClaims.ID,
+		UserEmail: user.Email,
+		RefreshToken: refreshToken,
+		IsRevoked: false,
+		ExpiresAt: refreshClaim.RegisteredClaims.ExpiresAt.Time,
+	})
+
+	if err != nil {
+		http.Error(w, "error creating session", http.StatusInternalServerError)
 		return
 	}
 
 	res := LoginUserRes{
+		SessionID: session.ID,
 		AccessToken: accessToken,
-		User: UserRes{
-			Name: user.Name,
-			Email: user.Email,
-			IsAdmin: user.IsAdmin,
-		},
+		RefreshToken: refreshToken,
+		AccessTokenExpiresAt: accessClaims.RegisteredClaims.ExpiresAt.Time,
+		RefreshTokenExpiresAt: refreshClaim.RegisteredClaims.ExpiresAt.Time,
+		User: toUserRes(user),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
+}
+
+func (h *handler) logoutUser(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		http.Error(w, "missing session id", http.StatusBadRequest)
+		return
+	}
+
+	err := h.server.DeleteSession(h.ctx, id)
+
+	if err != nil {
+		http.Error(w, "error deleting session", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

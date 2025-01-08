@@ -55,16 +55,16 @@ type OrderRes struct {
 }
 
 type UserReq struct {
-	Name string `json:"string"`
-	Email string `json:"email"`
+	Name     string `json:"string"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
-	IsAdmin bool `json:"is_admin"`
+	IsAdmin  bool   `json:"is_admin"`
 }
 
 type UserRes struct {
-	Name string `json:"name"`
-	Email string `json:"email"`
-	IsAdmin bool `json:"is_admin"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	IsAdmin bool   `json:"is_admin"`
 }
 
 type AllUsers struct {
@@ -72,15 +72,24 @@ type AllUsers struct {
 }
 
 type LoginUserReq struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 type LoginUserRes struct {
-	SessionID string `json:"session_id"`
-	AccessToken string `json:"access_token"`
+	SessionID             string    `json:"session_id"`
+	AccessToken           string    `json:"access_token"`
+	RefreshToken          string    `json:"refresh_token"`
+	AccessTokenExpiresAt  time.Time `json:"access_token_expires_at"`
+	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
+	User                  UserRes   `json:"user"`
+}
+
+type RenewAccessTokenReq struct {
 	RefreshToken string `json:"refresh_token"`
+}
+
+type RenewAccessTokenRes struct {
+	AccessToken          string `json:"access_token"`
 	AccessTokenExpiresAt string `json:"access_token_expires_at"`
-	RefreshTokenExpiresAt string `json:"refresh_token_expires_at"`
-	User UserRes `json:"user"`
 }
