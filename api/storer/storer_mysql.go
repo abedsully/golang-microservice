@@ -282,3 +282,13 @@ func (ms *MySQLStorer) DeleteUser(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+func (ms *MySQLStorer) CreateSession(ctx context.Context, s *Session) (*Session, error) {
+	_, err := ms.db.NamedExecContext(ctx, "INSERT INTO sessions (id, user_email, refresh_token, is_revoked, expires_at) VALUES (:id, :user_email, :refresh_token, :is_revoked, :expires_at)", s)
+
+	if err != nil {
+		return nil, fmt.Errorf("error inserting sessions: %w", err)
+	}
+
+	return s, nil
+}
