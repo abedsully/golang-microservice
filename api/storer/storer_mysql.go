@@ -306,7 +306,7 @@ func (ms *MySQLStorer) GetSession(ctx context.Context, id string) (*Session, err
 }
 
 func (ms *MySQLStorer) RevokeSession(ctx context.Context, id string) error {
-	_, err := ms.db.NamedExecContext(ctx, "UPDATE sessions SET is_revoke=1 WHERE id=?", id)
+	_, err := ms.db.NamedExecContext(ctx, "UPDATE sessions SET is_revoked=1 WHERE id=:id", map[string]interface{}{"id":id})
 
 	if err != nil {
 		return fmt.Errorf("error updating session: %w", err)
