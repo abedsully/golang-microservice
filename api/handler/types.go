@@ -55,7 +55,7 @@ type OrderRes struct {
 }
 
 type UserReq struct {
-	Name     string `json:"string"`
+	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	IsAdmin  bool   `json:"is_admin"`

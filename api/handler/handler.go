@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -440,6 +441,8 @@ func (h *handler) updateUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.server.GetUser(h.ctx, u.Email)
 
+	fmt.Println(user.ID)
+
 	if err != nil {
 		http.Error(w, "error getting user", http.StatusBadRequest)
 		return
@@ -608,3 +611,22 @@ func (h *handler) renewAccessToken(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }
+
+func(h *handler) revokeSession(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		http.Error(w, "missing session ID", http.StatusBadRequest)
+		return
+	}
+
+	err := h.server.RevokeSession(h.ctx, id)
+
+	if err != nil {
+		http.Error(w, "error revoking session", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+

@@ -243,7 +243,7 @@ func (ms *MySQLStorer) CreateUser(ctx context.Context, u *User) (*User, error) {
 
 func (ms *MySQLStorer) GetUser(ctx context.Context, email string) (*User, error) {
 	var u User
-	err := ms.db.GetContext(ctx, &u, "SELECT FROM users WHERE eamail=?", email)
+	err := ms.db.GetContext(ctx, &u, "SELECT * FROM users WHERE email=?", email)
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting user: %w", err)
@@ -264,7 +264,7 @@ func (ms *MySQLStorer) GetAllUsers(ctx context.Context) ([]User, error) {
 }
 
 func (ms *MySQLStorer) UpdateUser(ctx context.Context, u *User) (*User, error) {
-	_, err := ms.db.NamedExecContext(ctx, "UPDATE users SET name=:name, email=:email, password=:password, is_admin-:is_admin, updated_at=:updated_at", u)
+	_, err := ms.db.NamedExecContext(ctx, "UPDATE users SET name=:name, email=:email, password=:password, is_admin=:is_admin, updated_at=:updated_at WHERE id=:id", u)
 
 	if err != nil {
 		return nil, fmt.Errorf("error updating user: %w", err)

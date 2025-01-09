@@ -9,7 +9,7 @@ CREATE TABLE
         `num_reviews` int NOT NULL DEFAULT 0,
         `price` decimal(10, 2) NOT NULL,
         `count_in_stock` int NOT NULL,
-        `created_at` datetime DEFAULT (now ()),
+        `created_at` datetime DEFAULT (now()),
         `updated_at` datetime
     );
 
@@ -20,7 +20,7 @@ CREATE TABLE
         `tax_price` decimal(10, 2) NOT NULL,
         `shipping_price` decimal(10, 2) NOT NULL,
         `total_price` decimal(10, 2) NOT NULL,
-        `created_at` datetime DEFAULT (now ()),
+        `created_at` datetime DEFAULT (now()),
         `updated_at` datetime
     );
 
