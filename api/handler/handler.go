@@ -559,3 +559,52 @@ func (h *handler) logoutUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *handler) renewAccessToken(w http.ResponseWriter, r *http.Request) {
+	var req RenewAccessTokenReq
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "error decoding json body", http.StatusBadRequest)
+		return
+	}
+
+	refreshClaim, err := h.tokenMaker.VerifyToken(req.RefreshToken)
+
+	if err != nil {
+		http.Error(w, "error verifying refresh token", http.StatusUnauthorized)
+		return
+	}
+
+	session, err := h.server.GetSession(h.ctx, refreshClaim.RegisteredClaims.ID)
+
+	if err != nil {
+		http.Error(w, "error getting session", http.StatusInternalServerError)
+		return
+	}
+
+	if session.IsRevoked{
+		http.Error(w, "session has been revoked", http.StatusUnauthorized)
+		return
+	}
+
+	if session.UserEmail != refreshClaim.Email {
+		http.Error(w, "invalid session", http.StatusUnauthorized)
+		return
+	}
+
+	accessToken, accessClaims, err := h.tokenMaker.CreateToken(refreshClaim.ID, refreshClaim.Email, refreshClaim.IsAdmin, 15 * time.Minute)
+
+	if err != nil {
+		http.Error(w, "error creating token", http.StatusInternalServerError)
+		return
+	}
+
+	res := RenewAccessTokenRes {
+		AccessToken: accessToken,
+		AccessTokenExpiresAt: accessClaims.RegisteredClaims.ExpiresAt.Time,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}

@@ -293,7 +293,7 @@ func (ms *MySQLStorer) CreateSession(ctx context.Context, s *Session) (*Session,
 	return s, nil
 }
 
-func (ms *MySQLStorer) GetSession(ctx context.Context, id int64) (*Session, error) {
+func (ms *MySQLStorer) GetSession(ctx context.Context, id string) (*Session, error) {
 	var s Session
 
 	err := ms.db.GetContext(ctx, &s, "SELECT * FROM sessions WHERE id=?", id)
@@ -305,7 +305,7 @@ func (ms *MySQLStorer) GetSession(ctx context.Context, id int64) (*Session, erro
 	return &s, nil
 }
 
-func (ms *MySQLStorer) RevokeSession(ctx context.Context, id int64) error {
+func (ms *MySQLStorer) RevokeSession(ctx context.Context, id string) error {
 	_, err := ms.db.NamedExecContext(ctx, "UPDATE sessions SET is_revoke=1 WHERE id=?", id)
 
 	if err != nil {

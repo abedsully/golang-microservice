@@ -19,7 +19,7 @@ func NewUserClaim(id int64, email string, isAdmin bool, duration time.Duration) 
 	tokenID, err := uuid.NewRandom()
 
 	if err != nil {
-		return nil, fmt.Errorf("error genereating token ID: %w", &err)
+		return nil, fmt.Errorf("error genereating token ID: %w", err)
 	}
 
 	return &UserClaims{

@@ -76,11 +76,11 @@ func (s *Server) CreateSession(ctx context.Context, se *storer.Session) (*storer
 	return s.storer.CreateSession(ctx, se)
 }
 
-func (s *Server) GetSession(ctx context.Context, id int64) (*storer.Session, error) {
+func (s *Server) GetSession(ctx context.Context, id string) (*storer.Session, error) {
 	return s.storer.GetSession(ctx, id)
 }
 
-func (s *Server) RevokeSession(ctx context.Context, id int64) error {
+func (s *Server) RevokeSession(ctx context.Context, id string) error {
 	return s.storer.RevokeSession(ctx, id)
 }
 
