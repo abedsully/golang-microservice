@@ -32,7 +32,7 @@ func RegisterRoutes(handler *handler) *chi.Mux {
 
 		r.Route("/orders", func(r chi.Router) {
 			r.Post("/", handler.createOrder)
-			r.With(GetAdminMiddlewareFunc(tokenMaker)).Get("/", handler.getAllOrders)
+			r.With(GetAdminMiddlewareFunc(tokenMaker)).Get("/", handler.listOrders)
 
 			r.Route("/{id}", func(r chi.Router) {
 				r.Delete("/", handler.deleteOrder)
@@ -46,7 +46,7 @@ func RegisterRoutes(handler *handler) *chi.Mux {
 
 		r.Group(func(r chi.Router) {
 			r.Use(GetAdminMiddlewareFunc(tokenMaker))
-			r.Get("/", handler.getAllUsers)
+			r.Get("/", handler.listUsers)
 			r.Route("/{id}", func(r chi.Router) {
 				r.Delete("/", handler.deleteUser)
 			})

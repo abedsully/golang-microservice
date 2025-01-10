@@ -46,8 +46,8 @@ func (ms *MySQLStorer) GetProduct(ctx context.Context, id int64) (*Product, erro
 	return &p, nil
 }
 
-func (ms *MySQLStorer) GetAllProducts(ctx context.Context) ([]Product, error) {
-	var products []Product
+func (ms *MySQLStorer) GetAllProducts(ctx context.Context) ([]*Product, error) {
+	var products []*Product
 
 	err := ms.db.SelectContext(ctx, &products, "SELECT * FROM products")
 
@@ -155,8 +155,8 @@ func (ms *MySQLStorer) GetOrder(ctx context.Context, userID int64) (*Order, erro
 	return &o, nil
 }
 
-func (ms *MySQLStorer) GetAllOrders(ctx context.Context) ([]Order, error) {
-	var orders []Order
+func (ms *MySQLStorer) GetAllOrders(ctx context.Context) ([]*Order, error) {
+	var orders []*Order
 
 	err := ms.db.SelectContext(ctx, &orders, "SELECT * FROM orders")
 
@@ -252,8 +252,8 @@ func (ms *MySQLStorer) GetUser(ctx context.Context, email string) (*User, error)
 	return &u, nil
 }
 
-func (ms *MySQLStorer) GetAllUsers(ctx context.Context) ([]User, error) {
-	var users []User
+func (ms *MySQLStorer) GetAllUsers(ctx context.Context) ([]*User, error) {
+	var users []*User
 	err := ms.db.SelectContext(ctx, &users, "SELECT * FROM users")
 
 	if err != nil {
