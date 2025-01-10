@@ -104,7 +104,7 @@ message SessionRes {
     string user_email = 2;
     string refresh_token = 3;
     bool is_revoked = 4;
-    google.protobuf.Timestamp expires_ast = 5;
+    google.protobuf.Timestamp expires_at = 5;
 }
 
 service golang_microservice {
